@@ -30,6 +30,25 @@ function formatCourseName(name) {
   return cleaned;
 }
 
+function formatFacultyName(name) {
+  if (!name) return '';
+  const parts = String(name).split(',').map(p => p.trim()).filter(Boolean);
+  const cleanedParts = parts.map(part => {
+    let s = part.replace(/[\.\-_]/g, ' ');
+    s = s.replace(/\s+/g, ' ').trim();
+    const words = s.split(' ').filter(Boolean);
+    return words.map(w => {
+      const lw = w.toLowerCase();
+      if (lw === 'dr') return 'Dr';
+      if (lw === 'sr') return 'Sr';
+      if (lw === 'ii' || lw === 'iii' || lw === 'iv') return w.toUpperCase();
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }).join(' ');
+  });
+  return cleanedParts.join(', ');
+}
+
+
 const DEPARTMENT_ORDER = [
   'Languages',
   'Agriculture',
@@ -295,7 +314,7 @@ class CourseReportEngine {
         course_code: cCode,
         course_name: formatCourseName(cName),
         course_comm: cComm,
-        faculty_name: faculty,
+        faculty_name: formatFacultyName(faculty),
         batch_name: batch,
         dept: isLanguage ? "Languages" : dept,
         is_language: isLanguage

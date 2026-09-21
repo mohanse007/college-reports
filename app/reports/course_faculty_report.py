@@ -57,6 +57,34 @@ def format_course_name(name: str) -> str:
     return cleaned
 
 
+def format_faculty_name(name: str) -> str:
+    """Formats faculty names cleanly, e.g. M.renuka -> M Renuka, Kobagapu.likhitha -> Kobagapu Likhitha."""
+    if not name:
+        return ""
+    parts = [p.strip() for p in str(name).split(',') if p.strip()]
+    cleaned_parts = []
+    for part in parts:
+        s = re.sub(r'[\.\-_]', ' ', part)
+        s = re.sub(r'\s+', ' ', s).strip()
+        words = s.split(' ')
+        title_words = []
+        for w in words:
+            if not w:
+                continue
+            lw = w.lower()
+            if lw == 'dr':
+                title_words.append('Dr')
+            elif lw == 'sr':
+                title_words.append('Sr')
+            elif lw in ('ii', 'iii', 'iv'):
+                title_words.append(w.upper())
+            else:
+                title_words.append(w.capitalize())
+        cleaned_parts.append(' '.join(title_words))
+    return ', '.join(cleaned_parts)
+
+
+
 # Standard canonical department display names and ordering
 CANONICAL_DEPTS = [
     "Languages",
@@ -266,7 +294,7 @@ class CourseFacultyReport(BaseReport):
             records.append({
                 "course_code": c_code,
                 "course_name": format_course_name(c_name),
-                "faculty": faculty,
+                "faculty": format_faculty_name(faculty),
                 "batch": batch,
                 "dept": dept_name
             })
