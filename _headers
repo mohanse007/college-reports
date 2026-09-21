@@ -1,0 +1,6 @@
+/*
+  Cache-Control: public, max-age=3600
+/exceljs.min.js
+  Cache-Control: public, max-age=31536000, immutable
+/lucide.min.js
+  Cache-Control: public, max-age=31536000, immutable

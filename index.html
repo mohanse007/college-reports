@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>St. Ann's College - Report Generator Hub</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="./lucide.min.js"></script>
+  <!-- ExcelJS -->
+  <script src="./exceljs.min.js"></script>
+  <!-- Embedded Faculty Dataset (Default 53 entries) -->
+  <script src="./faculty_data.js"></script>
+  <!-- Report Engine & App Script -->
+  <script src="./course_report_engine.js"></script>
+  <script src="./app.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-slate-900 leading-tight">St. Ann's College for Women (A)</h1>
+            <p class="text-xs text-slate-500 font-medium">Autonomous College Report Generator Hub</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+            Cloudflare Pages Ready
+          </span>
+          <span class="text-xs text-slate-400 hidden sm:inline">• 100% Client-Side & Private</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Report Selection Sub-navigation -->
+  <div class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="flex space-x-2 sm:space-x-4 py-2 overflow-x-auto" aria-label="Tabs">
+        <button data-tab="tab-course-allocation" class="nav-tab-btn active px-3.5 py-2 text-sm font-semibold rounded-lg border-b-2 border-blue-600 text-blue-600 bg-blue-50 flex items-center space-x-2 whitespace-nowrap transition-all">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+          <span>Course Allocation Report</span>
+          <span class="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded-full">ACTIVE</span>
+        </button>
+        <button data-tab="tab-faculty" class="nav-tab-btn px-3.5 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center space-x-2 whitespace-nowrap transition-all">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>Faculty Directory</span>
+          <span id="facultyCountBadge" class="ml-1.5 px-1.5 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 rounded-full">53 Loaded</span>
+        </button>
+        <button data-tab="tab-workload" class="nav-tab-btn px-3.5 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center space-x-2 whitespace-nowrap transition-all">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          <span>Faculty Workload</span>
+          <span class="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-500 rounded">Upcoming</span>
+        </button>
+        <button data-tab="tab-timetable" class="nav-tab-btn px-3.5 py-2 text-sm font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center space-x-2 whitespace-nowrap transition-all">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          <span>Timetable Matrix</span>
+          <span class="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-500 rounded">Upcoming</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+    <!-- ============================================================= -->
+    <!-- TAB 1: Course Allocation Report (Active) -->
+    <!-- ============================================================= -->
+    <div id="tab-course-allocation" class="tab-panel space-y-6">
+      <!-- Welcome & Instructions Card -->
+      <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-8 -bottom-8 opacity-10 pointer-events-none">
+          <i data-lucide="table" class="w-64 h-64"></i>
+        </div>
+        <div class="relative z-10 max-w-3xl">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/30 text-blue-200 border border-blue-400/30 mb-2">
+            Report 1 • Course List with Faculty Details
+          </span>
+          <h2 class="text-2xl font-bold text-white tracking-tight">Convert Raw SIS Allocation Excel into College Standard Report</h2>
+          <p class="mt-2 text-slate-300 text-sm leading-relaxed">
+            Drop your raw course allocation spreadsheet below. The engine automatically extracts the Semester and Admitted Batch, segregates General Languages into their own top section, applies the 1-to-10 course code hierarchy with Theory/Practical pairing, and fetches official faculty contact numbers.
+          </p>
+        </div>
+      </div>
+
+      <!-- File Upload & Configuration Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Upload Drag & Drop Zone (7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-semibold text-slate-900 mb-1 flex items-center">
+              <i data-lucide="upload-cloud" class="w-5 h-5 text-blue-600 mr-2"></i>
+              Step 1: Upload Raw Course Allocation Export
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Export from SIS/ERP containing columns: Course Code, Course Name, Community, Faculty, Batch/Section Name</p>
+
+            <div id="dropzone" class="border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50/70 hover:bg-blue-50/40 rounded-xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center">
+              <input type="file" id="rawFileInput" accept=".xlsx, .xls" class="hidden">
+              <div class="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3 shadow-inner">
+                <i data-lucide="file-up" class="w-7 h-7"></i>
+              </div>
+              <p class="text-sm font-semibold text-slate-800">Click to browse or drag and drop raw Excel file here</p>
+              <p class="text-xs text-slate-500 mt-1">Supports .xlsx or .xls (Course_Allocation_Report_*.xlsx)</p>
+            </div>
+          </div>
+
+          <!-- File Uploaded Info Card -->
+          <div id="fileStatusCard" class="hidden mt-4 bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                <i data-lucide="file-check-2" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <p id="fileNameLabel" class="text-sm font-bold text-slate-800 truncate max-w-xs">filename.xlsx</p>
+                <p id="fileSizeLabel" class="text-xs text-slate-500">0 KB</p>
+              </div>
+            </div>
+            <span id="badgeStatus" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Loaded
+            </span>
+          </div>
+        </div>
+
+        <!-- Detected Headers & Overrides (5 cols) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-semibold text-slate-900 mb-1 flex items-center">
+              <i data-lucide="sliders" class="w-5 h-5 text-indigo-600 mr-2"></i>
+              Step 2: Auto-Detected Report Headers
+            </h3>
+            <p class="text-xs text-slate-500 mb-4">Values are automatically parsed from row 1 metadata. You can customize them before generation if needed.</p>
+
+            <div class="space-y-3.5">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">College Header Title</label>
+                <input type="text" id="inputCollegeName" value="St.Ann's College for Women (A)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Semester Title</label>
+                <input type="text" id="inputSemesterTitle" placeholder="e.g. 3rd Semester Course Code, Course name with faculty Details" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Admitted Batch Text</label>
+                <input type="text" id="inputAdmittedBatch" placeholder="e.g. Admitted Batch 2025-2026" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              </div>
+
+              <div id="metaDetectionCard" class="hidden pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                <span>Detected Term: <strong id="badgeTerm" class="text-blue-700 font-mono">-</strong></span>
+                <span>Batch Year: <strong id="badgeYear" class="text-blue-700 font-mono">-</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-6 mt-6 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+            <button id="generateReportBtn" disabled class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Generate & Download Excel</span>
+            </button>
+            <button id="previewReportBtn" disabled class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl transition-all flex items-center justify-center space-x-1.5 opacity-50 cursor-not-allowed">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+              <span id="previewBtnText">Live Preview</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live Preview Section (Toggled by user) -->
+      <div id="previewContainer" class="hidden bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Report Preview: Sheet 1 (Department-wise Course List)</h3>
+            <p class="text-xs text-slate-500">Live preview of departments, courses, theory/practical pairing, and phone numbers.</p>
+          </div>
+          <span class="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200 font-medium">
+            Sheet 1 & Sheet 2 included in download
+          </span>
+        </div>
+        <div id="previewTableContent" class="space-y-4 max-h-[600px] overflow-y-auto pr-1"></div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- TAB 2: Faculty Directory Management -->
+    <!-- ============================================================= -->
+    <div id="tab-faculty" class="tab-panel hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 flex items-center">
+              <i data-lucide="contact" class="w-6 h-6 text-blue-600 mr-2"></i>
+              Faculty Contact Directory
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Official phone numbers used to automatically populate reports. Custom phone edits are saved directly in your browser.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <input type="file" id="staffListImportInput" accept=".xlsx, .xls" class="hidden">
+            <button id="importStaffBtn" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold text-xs rounded-xl transition-all flex items-center space-x-1.5">
+              <i data-lucide="upload" class="w-4 h-4"></i>
+              <span>Import Staff List Report (.xlsx)</span>
+            </button>
+            <button id="exportFacultyBtn" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition-all flex items-center space-x-1.5">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Export to Excel</span>
+            </button>
+            <button id="resetFacultyBtn" class="px-3 py-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-xs font-medium rounded-xl transition-all">
+              Reset to Defaults
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="py-4">
+          <div class="relative max-w-md">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3 text-slate-400"></i>
+            <input type="text" id="facultySearchInput" placeholder="Search staff name or phone number..." class="w-full pl-10 pr-4 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Faculty Table -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-sm text-slate-700">
+            <thead class="bg-slate-100 text-xs uppercase text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 w-16 text-center">#</th>
+                <th class="px-4 py-3">Faculty Name</th>
+                <th class="px-4 py-3 w-48">Phone Number</th>
+                <th class="px-4 py-3 w-32 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="facultyTableBody" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- TAB 3: Faculty Workload (Modular Slot for Future Report) -->
+    <!-- ============================================================= -->
+    <div id="tab-workload" class="tab-panel hidden space-y-6">
+      <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm text-center max-w-2xl mx-auto">
+        <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="bar-chart-2" class="w-8 h-8"></i>
+        </div>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 mb-2">
+          Modular Extension Slot
+        </span>
+        <h2 class="text-2xl font-bold text-slate-900">Faculty Workload Analysis Report</h2>
+        <p class="text-sm text-slate-500 mt-2">
+          This tab is reserved for your upcoming <strong>Faculty Workload & Hours Distribution Report</strong>.
+          The modular architecture of this web portal allows adding this report seamlessly once the raw workload format or requirements are provided.
+        </p>
+        <div class="mt-6 pt-6 border-t border-slate-100 flex justify-center gap-4 text-xs text-slate-400">
+          <span>• Theory / Practical Hour Summary</span>
+          <span>• Departmental Load Metrics</span>
+          <span>• Individual Staff Allotments</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- TAB 4: Timetable Matrix (Modular Slot for Future Report) -->
+    <!-- ============================================================= -->
+    <div id="tab-timetable" class="tab-panel hidden space-y-6">
+      <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm text-center max-w-2xl mx-auto">
+        <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="calendar-range" class="w-8 h-8"></i>
+        </div>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 mb-2">
+          Modular Extension Slot
+        </span>
+        <h2 class="text-2xl font-bold text-slate-900">Batch-wise Timetable Matrix Report</h2>
+        <p class="text-sm text-slate-500 mt-2">
+          This tab is reserved for your upcoming <strong>Section & Batch Timetable Matrix</strong> report.
+          Ready to plug in when timetable source formats are defined.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-2">
+      <p>© St. Ann's College for Women (A) • Autonomous College Reports</p>
+      <p>Deployable on Cloudflare Pages • Vercel • GitHub Pages</p>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+</body>
+</html>
